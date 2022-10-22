@@ -413,12 +413,30 @@ std::pair<boost::gregorian::date,boost::gregorian::date> daterange_from_list(std
             std::string datend = l.substr(l.rfind("|")+1, std::string::npos);
             if (datend.size() > 0) {
                 boost::gregorian::date leafdate;
+                std::string year;
                 try {
-                    if (datend.size() == 8) {
-                        leafdate = boost::gregorian::from_string("20"+datend);
-                    } else if (datend.size() == 10) {
+                    if ((datend.size() == 10) || (datend.size() == 9)) {
                         leafdate = boost::gregorian::from_string(datend);
+                    } else if (datend.size() == 8) {
+                        year = datend.substr(0, datend.find("-"));
+                        if (year.size() == 2) {
+                            leafdate = boost::gregorian::from_string("20"+datend);
+                        } else if (year.size() == 4) {
+                            leafdate = boost::gregorian::from_string(datend);
+                        } else {
+                            fprintf(stderr, "WARNING: Sample name %s has malformed date; ignoring for date range calculation.\n", l.c_str());
+                            continue;
+                        }
+                    } else if ((datend.size() == 7) || (datend.size() == 6)) {
+                        year = datend.substr(0, datend.find("-"));
+                        if (year.size() == 2) {
+                            leafdate = boost::gregorian::from_string("20"+datend);
+                        } else {
+                            fprintf(stderr, "WARNING: Sample name %s has malformed date; ignoring for date range calculation.\n", l.c_str());
+                            continue;
+                        }
                     } else {
+                        fprintf(stderr, "WARNING: Sample name %s has malformed date; ignoring for date range calculation.\n", l.c_str());
                         continue;
                     }
                 } catch (boost::bad_lexical_cast &e) {
